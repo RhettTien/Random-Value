@@ -254,34 +254,42 @@
         // Create first calculation area when page loads
         document.addEventListener('DOMContentLoaded', function () {
             addCalculationArea();
+
+            // 事件委托：为整个container添加一个事件监听器，处理所有direction按钮的点击
+            document.getElementById('calculation-container').addEventListener('click', function(e) {
+                // 检查点击的是否是direction按钮
+                if (e.target.classList.contains('direction-btn')) {
+                    const parentArea = e.target.closest('.calculation-area');
+                    if (parentArea) {
+                        const directionBtns = parentArea.querySelectorAll('.direction-btn');
+                        directionBtns.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                    }
+                }
+            });
         });
 
         // Add event listener for add area button
-        document.getElementById('add-area-btn').addEventListener('click', function () {
-            addCalculationArea();
-        });
+        document.getElementById('add-area-btn').addEventListener('click', addCalculationArea);
 
-        // Function to add calculation area
-        function addCalculationArea() {
-            const areaId = 'area-' + areaCounter++;
-            const container = document.getElementById('calculation-container');
-
-            const areaHTML = `
+        // 创建HTML模板
+        function createAreaTemplate(areaId) {
+            return `
                 <div id="${areaId}" class="calculation-area">
                     <div class="input-group">
                         <div class="input-item">
-                            <label for="${areaId}-standard">Standard Value</label>
+                            <label for="${areaId}-standard">标准值</label>
                             <input type="number" id="${areaId}-standard" step="any" value="10">
                         </div>
                         <div class="input-item">
-                            <label for="${areaId}-tolerance">Tolerance</label>
+                            <label for="${areaId}-tolerance">公差</label>
                             <input type="number" id="${areaId}-tolerance" step="any" value="0.2">
                         </div>
                     </div>
                     
                     <div class="input-group">
                         <div class="input-item">
-                            <label>Tolerance Direction</label>
+                            <label>公差方向</label>
                             <div class="direction-buttons">
                                 <button class="direction-btn" data-direction="plus">+</button>
                                 <button class="direction-btn" data-direction="minus">-</button>
@@ -289,54 +297,85 @@
                             </div>
                         </div>
                         <div class="input-item">
-                            <label for="${areaId}-factor">Fluctuation Factor (%)</label>
+                            <label for="${areaId}-factor">波动因子 (%)</label>
                             <input type="number" id="${areaId}-factor" min="0" max="100" value="75">
                         </div>
                     </div>
                     
                     <div class="input-group">
                         <div class="input-item">
-                            <label for="${areaId}-subcount">Number of Sub-data</label>
+                            <label for="${areaId}-subcount">子数据数量</label>
                             <input type="number" id="${areaId}-subcount" min="1" value="3">
                         </div>
                         <div class="input-item">
-                            <label for="${areaId}-resultcount">Number of Results</label>
+                            <label for="${areaId}-resultcount">结果数量</label>
                             <input type="number" id="${areaId}-resultcount" min="1" value="5">
                         </div>
                     </div>
                     
                     <div class="input-group">
                         <div class="input-item">
-                            <label for="${areaId}-precision">Decimal Precision</label>
+                            <label for="${areaId}-precision">小数精度</label>
                             <input type="number" id="${areaId}-precision" min="0" max="10" value="3">
                         </div>
                         <div class="input-item">
-                            <!-- Reserved space for symmetry -->
+                            <!-- 对称保留空间 -->
                         </div>
                     </div>
                     
-                    <button class="calculate-btn" onclick="calculate('${areaId}')">Calculate</button>
+                    <button class="calculate-btn" data-area="${areaId}">计算</button>
                     
                     <div id="${areaId}-results" class="results">
-                        <!-- Results will be displayed here -->
+                        <!-- 结果将显示在这里 -->
                     </div>
                 </div>
             `;
+        }
 
-            container.insertAdjacentHTML('beforeend', areaHTML);
-
-            // Add event listeners for direction buttons
-            const directionBtns = document.querySelectorAll(`#${areaId} .direction-btn`);
-            directionBtns.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    directionBtns.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                });
+        // Function to add calculation area
+        function addCalculationArea() {
+            const areaId = 'area-' + areaCounter++;
+            const container = document.getElementById('calculation-container');
+            
+            // 使用模板函数创建HTML
+            container.insertAdjacentHTML('beforeend', createAreaTemplate(areaId));
+            
+            // 为新添加的计算按钮添加事件监听器，替代内联onclick
+            const newCalculateBtn = document.querySelector(`#${areaId} .calculate-btn`);
+            newCalculateBtn.addEventListener('click', function() {
+                calculate(areaId);
             });
+        }
+
+        // 创建表头函数
+        function createTableHeader(subCount) {
+            const fragment = document.createDocumentFragment();
+            const headerRow = document.createElement('tr');
+            
+            // 添加表头单元格
+            const headers = ['序号'];
+            for (let i = 1; i <= subCount; i++) {
+                headers.push(`${i}`);
+            }
+            headers.push('平均值');
+            
+            headers.forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                headerRow.appendChild(th);
+            });
+            
+            const thead = document.createElement('thead');
+            thead.appendChild(headerRow);
+            fragment.appendChild(thead);
+            
+            return fragment;
         }
 
         // Calculate function
         function calculate(areaId) {
+            // 获取输入值并缓存DOM元素引用
+            const form = document.getElementById(areaId);
             const standardValue = parseFloat(document.getElementById(`${areaId}-standard`).value);
             const tolerance = parseFloat(document.getElementById(`${areaId}-tolerance`).value);
             const factor = parseFloat(document.getElementById(`${areaId}-factor`).value) / 100;
@@ -344,89 +383,76 @@
             const resultCount = parseInt(document.getElementById(`${areaId}-resultcount`).value);
             const precision = parseInt(document.getElementById(`${areaId}-precision`).value);
 
-            // Get selected direction
+            // 获取所选方向
             const directionBtn = document.querySelector(`#${areaId} .direction-btn.active`);
             const direction = directionBtn.dataset.direction;
 
+            // 清空结果容器
             const resultsContainer = document.getElementById(`${areaId}-results`);
             resultsContainer.innerHTML = '';
 
-            // Create table
+            // 使用文档片段减少DOM操作
+            const fragment = document.createDocumentFragment();
+            
+            // 创建表格
             const table = document.createElement('table');
             table.className = 'result-table';
-
-            // Create table header
-            const thead = document.createElement('thead');
-            const headerRow = document.createElement('tr');
-
-            // Add header cells
-            const headers = ['No.'];
-            for (let i = 1; i <= subCount; i++) {
-                headers.push(`${i}`);
-            }
-            headers.push('Average');
-
-            headers.forEach(headerText => {
-                const th = document.createElement('th');
-                th.textContent = headerText;
-                headerRow.appendChild(th);
-            });
-
-            thead.appendChild(headerRow);
-            table.appendChild(thead);
-
-            // Create table body
+            
+            // 添加表头
+            table.appendChild(createTableHeader(subCount));
+            
+            // 创建表体
             const tbody = document.createElement('tbody');
+            
+            // 预先计算可复用的值
+            const rangeData = calculateRange(standardValue, tolerance, direction);
+            const adjustedRange = adjustRange(rangeData.min, rangeData.max, factor);
 
-            // Add result rows
+            // 添加结果行
             for (let i = 0; i < resultCount; i++) {
-                const subResults = [];
-
-                // Generate sub-data
-                for (let j = 0; j < subCount; j++) {
-                    const subValue = generateRandomValue(standardValue, tolerance, direction, factor);
-                    subResults.push(subValue);
-                }
-
-                // Calculate final value (average) with proper rounding
-                const finalValue = subResults.reduce((a, b) => a + b, 0) / subCount;
-                
-                // Apply proper rounding for display (standard 4/5 rounding)
-                const roundedFinalValue = Number(finalValue.toFixed(precision));
-
-                // Create row
                 const row = document.createElement('tr');
-
-                // Add index cell
+                const subResults = [];
+                
+                // 添加索引单元格
                 const indexCell = document.createElement('td');
                 indexCell.textContent = i + 1;
                 row.appendChild(indexCell);
-
-                // Add sub-data cells
-                subResults.forEach(value => {
+                
+                // 生成子数据
+                for (let j = 0; j < subCount; j++) {
+                    // 使用预计算的范围数据生成随机值
+                    const subValue = generateRandomInRange(adjustedRange.min, adjustedRange.max);
+                    subResults.push(subValue);
+                    
                     const td = document.createElement('td');
-                    td.textContent = value.toFixed(precision);
+                    td.textContent = subValue.toFixed(precision);
                     row.appendChild(td);
-                });
-
-                // Add final value cell
+                }
+                
+                // 计算最终值（平均值）并进行正确舍入
+                const sum = subResults.reduce((a, b) => a + b, 0);
+                const finalValue = sum / subCount;
+                const roundedFinalValue = Number(finalValue.toFixed(precision));
+                
+                // 添加最终值单元格
                 const finalCell = document.createElement('td');
                 finalCell.textContent = roundedFinalValue.toFixed(precision);
                 finalCell.className = 'final-value';
                 row.appendChild(finalCell);
-
+                
                 tbody.appendChild(row);
             }
-
+            
             table.appendChild(tbody);
-            resultsContainer.appendChild(table);
+            fragment.appendChild(table);
+            resultsContainer.appendChild(fragment);
         }
 
-        // Function to generate random value
-        function generateRandomValue(standard, tolerance, direction, factor) {
+        // 计算基础范围
+        function calculateRange(standard, tolerance, direction) {
             let min, max;
-
-            // Set range based on direction
+            
+            // 根据方向设置范围
             switch (direction) {
                 case 'plus':
                     min = standard;
@@ -442,14 +468,23 @@
                     max = standard + tolerance;
                     break;
             }
-
-            // Adjust range based on fluctuation factor
+            
+            return { min, max };
+        }
+        
+        // 根据波动因子调整范围
+        function adjustRange(min, max, factor) {
             const range = max - min;
-            const adjustedMin = min + (range * (1 - factor) / 2);
-            const adjustedMax = max - (range * (1 - factor) / 2);
-
-            // Generate random number
-            return Math.random() * (adjustedMax - adjustedMin) + adjustedMin;
+            const adjustment = range * (1 - factor) / 2;
+            return {
+                min: min + adjustment,
+                max: max - adjustment
+            };
+        }
+        
+        // 在给定范围内生成随机数
+        function generateRandomInRange(min, max) {
+            return Math.random() * (max - min) + min;
         }
     </script>
 </body>
