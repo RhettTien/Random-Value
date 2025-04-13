@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Value Generator</title>
+    <link rel="icon" href="random-value-icon.svg" type="image/svg+xml">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            padding: 15px;
+            background-color: #f5f5f5;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        @media screen and (min-width: 768px) {
+            body {
+                max-width: 800px;
+                padding: 20px;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        @media screen and (min-width: 768px) {
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 30px;
+            }
+        }
+
+        .calculation-area {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        @media screen and (min-width: 768px) {
+            .calculation-area {
+                padding: 20px;
+            }
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        @media screen and (min-width: 768px) {
+            .input-group {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+        }
+
+        .input-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        @media screen and (min-width: 768px) {
+            label {
+                font-size: 1rem;
+            }
+        }
+
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        @media screen and (min-width: 768px) {
+            input {
+                font-size: 1rem;
+            }
+        }
+
+        .direction-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        @media screen and (min-width: 768px) {
+            .direction-buttons {
+                gap: 10px;
+            }
+        }
+
+        .direction-btn {
+            flex: 1;
+            padding: 8px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        @media screen and (min-width: 768px) {
+            .direction-btn {
+                font-size: 1rem;
+            }
+        }
+
+        .direction-btn.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .add-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        @media screen and (min-width: 768px) {
+            .add-button {
+                padding: 15px;
+                font-size: 1rem;
+            }
+        }
+
+        .add-button:hover {
+            background-color: #45a049;
+        }
+
+        .results {
+            margin-top: 15px;
+            overflow-x: auto;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        @media screen and (min-width: 768px) {
+            .result-table {
+                font-size: 0.9rem;
+            }
+        }
+
+        .result-table th,
+        .result-table td {
+            border: 1px solid #ddd;
+            padding: 6px 4px;
+            text-align: center;
+        }
+
+        @media screen and (min-width: 768px) {
+
+            .result-table th,
+            .result-table td {
+                padding: 8px;
+            }
+        }
+
+        .result-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        .result-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .result-table tr:hover {
+            background-color: #f0f0f0;
+        }
+
+        .final-value {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .calculate-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        @media screen and (min-width: 768px) {
+            .calculate-btn {
+                padding: 10px 15px;
+                font-size: 1rem;
+                width: auto;
+            }
+        }
+
+        .calculate-btn:hover {
+            background-color: #0b7dda;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Random Value Generator</h1>
+
+    <div id="calculation-container">
+        <!-- Calculation areas will be dynamically added here -->
+    </div>
+
+    <button id="add-area-btn" class="add-button">+ Add Calculation Area</button>
+
+    <script>
+        // Area counter
+        let areaCounter = 0;
+
+        // Create first calculation area when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            addCalculationArea();
+        });
+
+        // Add event listener for add area button
+        document.getElementById('add-area-btn').addEventListener('click', function () {
+            addCalculationArea();
+        });
+
+        // Function to add calculation area
+        function addCalculationArea() {
+            const areaId = 'area-' + areaCounter++;
+            const container = document.getElementById('calculation-container');
+
+            const areaHTML = `
+                <div id="${areaId}" class="calculation-area">
+                    <div class="input-group">
+                        <div class="input-item">
+                            <label for="${areaId}-standard">Standard Value</label>
+                            <input type="number" id="${areaId}-standard" step="any" value="10">
+                        </div>
+                        <div class="input-item">
+                            <label for="${areaId}-tolerance">Tolerance</label>
+                            <input type="number" id="${areaId}-tolerance" step="any" value="0.2">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <div class="input-item">
+                            <label>Tolerance Direction</label>
+                            <div class="direction-buttons">
+                                <button class="direction-btn" data-direction="plus">+</button>
+                                <button class="direction-btn" data-direction="minus">-</button>
+                                <button class="direction-btn active" data-direction="both">±</button>
+                            </div>
+                        </div>
+                        <div class="input-item">
+                            <label for="${areaId}-factor">Fluctuation Factor (%)</label>
+                            <input type="number" id="${areaId}-factor" min="0" max="100" value="75">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <div class="input-item">
+                            <label for="${areaId}-subcount">Number of Sub-data</label>
+                            <input type="number" id="${areaId}-subcount" min="1" value="3">
+                        </div>
+                        <div class="input-item">
+                            <label for="${areaId}-resultcount">Number of Results</label>
+                            <input type="number" id="${areaId}-resultcount" min="1" value="5">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <div class="input-item">
+                            <label for="${areaId}-precision">Decimal Precision</label>
+                            <input type="number" id="${areaId}-precision" min="0" max="10" value="3">
+                        </div>
+                        <div class="input-item">
+                            <!-- Reserved space for symmetry -->
+                        </div>
+                    </div>
+                    
+                    <button class="calculate-btn" onclick="calculate('${areaId}')">Calculate</button>
+                    
+                    <div id="${areaId}-results" class="results">
+                        <!-- Results will be displayed here -->
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', areaHTML);
+
+            // Add event listeners for direction buttons
+            const directionBtns = document.querySelectorAll(`#${areaId} .direction-btn`);
+            directionBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    directionBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+
+        // Calculate function
+        function calculate(areaId) {
+            const standardValue = parseFloat(document.getElementById(`${areaId}-standard`).value);
+            const tolerance = parseFloat(document.getElementById(`${areaId}-tolerance`).value);
+            const factor = parseFloat(document.getElementById(`${areaId}-factor`).value) / 100;
+            const subCount = parseInt(document.getElementById(`${areaId}-subcount`).value);
+            const resultCount = parseInt(document.getElementById(`${areaId}-resultcount`).value);
+            const precision = parseInt(document.getElementById(`${areaId}-precision`).value);
+
+            // Get selected direction
+            const directionBtn = document.querySelector(`#${areaId} .direction-btn.active`);
+            const direction = directionBtn.dataset.direction;
+
+            const resultsContainer = document.getElementById(`${areaId}-results`);
+            resultsContainer.innerHTML = '';
+
+            // Create table
+            const table = document.createElement('table');
+            table.className = 'result-table';
+
+            // Create table header
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+
+            // Add header cells
+            const headers = ['No.'];
+            for (let i = 1; i <= subCount; i++) {
+                headers.push(`${i}`);
+            }
+            headers.push('Average');
+
+            headers.forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                headerRow.appendChild(th);
+            });
+
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Create table body
+            const tbody = document.createElement('tbody');
+
+            // Add result rows
+            for (let i = 0; i < resultCount; i++) {
+                const subResults = [];
+
+                // Generate sub-data
+                for (let j = 0; j < subCount; j++) {
+                    const subValue = generateRandomValue(standardValue, tolerance, direction, factor);
+                    subResults.push(subValue);
+                }
+
+                // Calculate final value (average)
+                const finalValue = subResults.reduce((a, b) => a + b, 0) / subCount;
+
+                // Create row
+                const row = document.createElement('tr');
+
+                // Add index cell
+                const indexCell = document.createElement('td');
+                indexCell.textContent = i + 1;
+                row.appendChild(indexCell);
+
+                // Add sub-data cells
+                subResults.forEach(value => {
+                    const td = document.createElement('td');
+                    td.textContent = value.toFixed(precision);
+                    row.appendChild(td);
+                });
+
+                // Add final value cell
+                const finalCell = document.createElement('td');
+                finalCell.textContent = finalValue.toFixed(precision);
+                finalCell.className = 'final-value';
+                row.appendChild(finalCell);
+
+                tbody.appendChild(row);
+            }
+
+            table.appendChild(tbody);
+            resultsContainer.appendChild(table);
+        }
+
+        // Function to generate random value
+        function generateRandomValue(standard, tolerance, direction, factor) {
+            let min, max;
+
+            // Set range based on direction
+            switch (direction) {
+                case 'plus':
+                    min = standard;
+                    max = standard + tolerance;
+                    break;
+                case 'minus':
+                    min = standard - tolerance;
+                    max = standard;
+                    break;
+                case 'both':
+                default:
+                    min = standard - tolerance;
+                    max = standard + tolerance;
+                    break;
+            }
+
+            // Adjust range based on fluctuation factor
+            const range = max - min;
+            const adjustedMin = min + (range * (1 - factor) / 2);
+            const adjustedMax = max - (range * (1 - factor) / 2);
+
+            // Generate random number
+            return Math.random() * (adjustedMax - adjustedMin) + adjustedMin;
+        }
+    </script>
+</body>
+
+</html>

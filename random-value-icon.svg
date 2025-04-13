@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Random Value Generator</title>
+    <defs>
+        <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#45a049;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#0b7dda;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#2196F3;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <!-- Background Circle -->
+        <circle cx="32" cy="32" r="30" fill="#f5f5f5" stroke="#ddd" stroke-width="1"></circle>
+        
+        <!-- Fluctuation Lines (Random Data) -->
+        <polyline points="8,32 14,40 20,28 26,36 32,24 38,42 44,30 50,38 56,26" 
+                  stroke="url(#blueGradient)" 
+                  stroke-width="3" 
+                  fill="none" 
+                  stroke-linecap="round"
+                  stroke-linejoin="round"></polyline>
+        
+        <!-- Average Line -->
+        <line x1="8" y1="32" x2="56" y2="32" stroke="url(#greenGradient)" stroke-width="2" stroke-dasharray="4,2"></line>
+        
+        <!-- Data Points -->
+        <circle cx="14" cy="40" r="2.5" fill="url(#blueGradient)"></circle>
+        <circle cx="20" cy="28" r="2.5" fill="url(#blueGradient)"></circle>
+        <circle cx="26" cy="36" r="2.5" fill="url(#blueGradient)"></circle>
+        <circle cx="32" cy="24" r="2.5" fill="url(#blueGradient)"></circle>
+        <circle cx="38" cy="42" r="2.5" fill="url(#blueGradient)"></circle>
+        <circle cx="44" cy="30" r="2.5" fill="url(#blueGradient)"></circle>
+        <circle cx="50" cy="38" r="2.5" fill="url(#blueGradient)"></circle>
+        <circle cx="56" cy="26" r="2.5" fill="url(#blueGradient)"></circle>
+        
+        <!-- Tolerance Indicators -->
+        <line x1="8" y1="24" x2="56" y2="24" stroke="#888" stroke-width="1" stroke-dasharray="2,2"></line>
+        <line x1="8" y1="40" x2="56" y2="40" stroke="#888" stroke-width="1" stroke-dasharray="2,2"></line>
+        
+        <!-- Plus/Minus Symbol -->
+        <g transform="translate(4, 5)">
+            <line x1="7" y1="4" x2="7" y2="10" stroke="#555" stroke-width="1.5" stroke-linecap="round"></line>
+            <line x1="4" y1="7" x2="10" y2="7" stroke="#555" stroke-width="1.5" stroke-linecap="round"></line>
+        </g>
+    </g>
+</svg> 
