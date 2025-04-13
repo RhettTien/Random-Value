@@ -388,8 +388,11 @@
                     subResults.push(subValue);
                 }
 
-                // Calculate final value (average)
+                // Calculate final value (average) with proper rounding
                 const finalValue = subResults.reduce((a, b) => a + b, 0) / subCount;
+                
+                // Apply proper rounding for display (standard 4/5 rounding)
+                const roundedFinalValue = Number(finalValue.toFixed(precision));
 
                 // Create row
                 const row = document.createElement('tr');
@@ -408,7 +411,7 @@
 
                 // Add final value cell
                 const finalCell = document.createElement('td');
-                finalCell.textContent = finalValue.toFixed(precision);
+                finalCell.textContent = roundedFinalValue.toFixed(precision);
                 finalCell.className = 'final-value';
                 row.appendChild(finalCell);
 
